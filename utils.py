@@ -77,3 +77,25 @@ def binary_log_loss(y_true, y_prob):
 
 LOSS_FUNCTIONS = {'squared_loss': squared_loss, 'log_loss': log_loss,
                   'binary_log_loss': binary_log_loss}
+
+
+class Individual:
+
+    def __init__(self, chromosome, fitness):
+        self._chromosome = np.copy(chromosome)
+        self._fitness = fitness
+
+    def chromosome(self):
+        return self._chromosome
+
+    def fitness(self):
+        return self._fitness
+
+    def set_chromosome(self, chromosome):
+        self._chromosome = np.copy(chromosome)
+
+    def set_fitness(self, fitness):
+        self._fitness = fitness
+
+
+

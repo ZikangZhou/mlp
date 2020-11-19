@@ -9,13 +9,17 @@ from utils import ACTIVATIONS, DERIVATIVES, LOSS_FUNCTIONS
 
 class MLP:
 
-    def __init__(self, hidden_layer_sizes=(100,), activation='relu', solver='ga', alpha=0.0001, batch_size=64,
-                 learning_rate='constant', learning_rate_init=0.001, power_t=0.5, max_iter=200, shuffle=True,
-                 random_state=None, tol=1e-4, momentum=0.9, nesterovs_momentum=True, early_stopping=False,
-                 validation_fraction=0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-8, n_iter_no_change=10):
+    def __init__(self, hidden_layer_sizes=(100,), activation='relu', solver='ga', pop_size=50, crossover_rate=0.4,
+                 mutation_rate=0.05, alpha=0.0001, batch_size=64, learning_rate='constant', learning_rate_init=0.001,
+                 power_t=0.5, max_iter=200, shuffle=True, random_state=None, tol=1e-4, momentum=0.9,
+                 nesterovs_momentum=True, early_stopping=False, validation_fraction=0.1, beta_1=0.9, beta_2=0.999,
+                 epsilon=1e-8, n_iter_no_change=10):
         self.activation = activation
         self.solver = solver
         self.optimizer = None
+        self.pop_size = pop_size
+        self.crossover_rate = crossover_rate
+        self.mutation_rate = mutation_rate
         self.alpha = alpha
         self.batch_size = batch_size
         self.learning_rate = learning_rate
@@ -53,6 +57,13 @@ class MLP:
             self.best_biases = []
         else:
             self.best_loss = np.inf
+
+    def get_params(self):
+        return self.weights, self.biases
+
+    def set_params(self, weights, biases):
+        self.weights = weights
+        self.biases = biases
 
     def fit(self, X, y):
         self.label_binarizer.fit(y)
@@ -97,7 +108,9 @@ class MLP:
         elif self.solver == 'adam':
             self.optimizer = AdamOptimizer(params, self.learning_rate_init, self.beta_1, self.beta_2, self.epsilon)
         else:
-            self.optimizer = GAOptimizer(params)
+            self.optimizer = GAOptimizer(model=self, X=X, y=self.label_binarizer.inverse_transform(y), params=params,
+                                         pop_size=self.pop_size, crossover_rate=self.crossover_rate,
+                                         mutation_rate=self.mutation_rate)
 
         if self.early_stopping:
             stratify = y if self.n_outputs == 1 else None
@@ -114,7 +127,7 @@ class MLP:
         for it in range(self.max_iter):
             if self.solver == 'ga':
                 self.optimizer.update_params()
-                loss = 1.0 / accuracy_score(y, self.predict(X))
+                loss = accuracy_score(y, self.predict(X))
             else:
                 accumulated_loss = 0.0
                 if self.shuffle:
@@ -136,7 +149,7 @@ class MLP:
 
             time_step += n_samples
             self.loss_curve.append(loss)
-            print(f"Iteration {it + 1}, loss = {loss}")
+            print(f"Iteration {it + 1}, accuracy = {accuracy_score(y, self.predict(X))}")
 
             self.update_no_improvement_count(X_val, y_val)
             self.optimizer.iteration_ends(time_step)
@@ -162,13 +175,6 @@ class MLP:
         activations[self.n_layers - 1] = output_activation(activations[self.n_layers - 1])
         return activations
 
-    def compute_loss_grad(self, layer, n_samples, activations, deltas, weight_grads, bias_grads):
-        weight_grads[layer] = np.dot(activations[layer].T, deltas[layer])
-        weight_grads[layer] += (self.alpha * self.weights[layer])
-        weight_grads[layer] /= n_samples
-        bias_grads[layer] = np.mean(deltas[layer], 0)
-        return weight_grads, bias_grads
-
     def backprop(self, X, y, activations, deltas, weight_grads, bias_grads):
         n_samples = X.shape[0]
         activations = self.forward_pass(activations)
@@ -192,6 +198,13 @@ class MLP:
             weight_grads, bias_grads = self.compute_loss_grad(i - 1, n_samples, activations, deltas, weight_grads,
                                                               bias_grads)
         return loss, weight_grads, bias_grads
+
+    def compute_loss_grad(self, layer, n_samples, activations, deltas, weight_grads, bias_grads):
+        weight_grads[layer] = np.dot(activations[layer].T, deltas[layer])
+        weight_grads[layer] += (self.alpha * self.weights[layer])
+        weight_grads[layer] /= n_samples
+        bias_grads[layer] = np.mean(deltas[layer], 0)
+        return weight_grads, bias_grads
 
     def update_no_improvement_count(self, X_val, y_val):
         if self.early_stopping:
@@ -231,8 +244,8 @@ def main():
     X = data[:, 1: 9]
     y = data[:, 9].ravel()
     X_train, X_test, y_train, y_test = train_test_split(X, y)
-    mlp = MLP(hidden_layer_sizes=(10, 10), solver='adam', max_iter=1000, batch_size=64, learning_rate_init=0.001,
-              n_iter_no_change=50)
+    mlp = MLP(hidden_layer_sizes=(10, 10, 10, 10), solver='ga', crossover_rate=0.4, mutation_rate=0.05, max_iter=100000,
+              batch_size=64, learning_rate_init=0.001, pop_size=50, n_iter_no_change=100000)
     mlp.fit(X_train, y_train)
     print(accuracy_score(y_test, mlp.predict(X_test)))
 
