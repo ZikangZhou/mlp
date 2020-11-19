@@ -231,7 +231,8 @@ def main():
     X = data[:, 1: 9]
     y = data[:, 9].ravel()
     X_train, X_test, y_train, y_test = train_test_split(X, y)
-    mlp = MLP(hidden_layer_sizes=(10, 10), solver='adam', max_iter=1000, batch_size=64, learning_rate_init=0.001, n_iter_no_change=50)
+    mlp = MLP(hidden_layer_sizes=(10, 10), solver='adam', max_iter=1000, batch_size=64, learning_rate_init=0.001,
+              n_iter_no_change=50)
     mlp.fit(X_train, y_train)
     print(accuracy_score(y_test, mlp.predict(X_test)))
 
