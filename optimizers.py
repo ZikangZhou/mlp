@@ -108,6 +108,7 @@ class GAOptimizer(BaseOptimizer):
             fitness = self.get_fitness(chromosome)
             self.pop.append(Individual(chromosome, fitness))
             self.mating_pop.append(Individual(chromosome, fitness))
+        self.update_params()
 
     def update_params(self, grads=None):
         updates = self._get_updates()
@@ -121,8 +122,9 @@ class GAOptimizer(BaseOptimizer):
         self.mutate()
         for i in range(self.pop_size):
             self.pop[i].set_fitness(self.get_fitness(self.pop[i].chromosome()))
-        return max(self.pop + [Individual(self.params, self.get_fitness(self.params))],
-                   key=lambda x: x.fitness()).chromosome()
+        self.pop[self.pop.index(min(self.pop, key=lambda x: x.fitness()))] = Individual(self.params,
+                                                                                        self.get_fitness(self.params))
+        return max(self.pop, key=lambda x: x.fitness()).chromosome()
 
     def get_fitness(self, chromosome):
         self.model.set_params(chromosome[: int(self.chromosome_len / 2)], chromosome[int(self.chromosome_len / 2):])
@@ -165,4 +167,4 @@ class GAOptimizer(BaseOptimizer):
             for j in range(self.chromosome_len):
                 for val in np.nditer(self.pop[i].chromosome()[j], op_flags=['readwrite']):
                     if np.random.rand() < self.mutation_rate:
-                        val[...] = np.random.uniform(-1.0, 1.0)
+                        val[...] += np.random.uniform(-0.001, 0.001)
