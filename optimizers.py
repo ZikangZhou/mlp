@@ -90,7 +90,7 @@ class AdamOptimizer(BaseOptimizer):
 
 class GAOptimizer(BaseOptimizer):
 
-    def __init__(self, model, X, y, params, pop_size, crossover_rate, mutation_rate):
+    def __init__(self, model, X, y, params, pop_size=50, crossover_rate=0.8, mutation_rate=0.05):
         super().__init__(params)
         self.model = copy.deepcopy(model)
         self.X = X
