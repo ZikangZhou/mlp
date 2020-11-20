@@ -167,4 +167,4 @@ class GAOptimizer(BaseOptimizer):
             for j in range(self.chromosome_len):
                 for val in np.nditer(self.pop[i].chromosome()[j], op_flags=['readwrite']):
                     if np.random.rand() < self.mutation_rate:
-                        val[...] += np.random.uniform(-0.001, 0.001)
+                        val[...] += np.random.normal(0.0, 0.1)

@@ -1,3 +1,4 @@
+import copy
 import numpy as np
 
 from scipy.special import expit as logistic_sigmoid
@@ -82,7 +83,7 @@ LOSS_FUNCTIONS = {'squared_loss': squared_loss, 'log_loss': log_loss,
 class Individual:
 
     def __init__(self, chromosome, fitness):
-        self._chromosome = np.copy(chromosome)
+        self._chromosome = copy.deepcopy(chromosome)
         self._fitness = fitness
 
     def chromosome(self):
@@ -92,10 +93,7 @@ class Individual:
         return self._fitness
 
     def set_chromosome(self, chromosome):
-        self._chromosome = np.copy(chromosome)
+        self._chromosome = copy.deepcopy(chromosome)
 
     def set_fitness(self, fitness):
         self._fitness = fitness
-
-
-
