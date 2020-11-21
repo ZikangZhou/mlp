@@ -80,6 +80,10 @@ LOSS_FUNCTIONS = {'squared_loss': squared_loss, 'log_loss': log_loss,
                   'binary_log_loss': binary_log_loss}
 
 
+def accuracy_score(y_true, y_pred):
+    return np.sum(y_true == y_pred) / len(y_true)
+
+
 class Individual:
 
     def __init__(self, chromosome, fitness):

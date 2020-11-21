@@ -1,10 +1,10 @@
+import copy
 import numpy as np
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.preprocessing import LabelBinarizer
 
 from optimizers import SGDOptimizer, AdamOptimizer, GAOptimizer
-from utils import ACTIVATIONS, DERIVATIVES, LOSS_FUNCTIONS
+from utils import ACTIVATIONS, DERIVATIVES, LOSS_FUNCTIONS, accuracy_score
 
 
 class MLP:
@@ -127,7 +127,7 @@ class MLP:
         for it in range(self.max_iter):
             if self.solver == 'ga':
                 self.optimizer.update_params()
-                loss = accuracy_score(y, self.predict(X))
+                loss = 1.0 / accuracy_score(y.ravel(), self.predict(X))
             else:
                 accumulated_loss = 0.0
                 if self.shuffle:
@@ -149,7 +149,7 @@ class MLP:
 
             time_step += n_samples
             self.loss_curve.append(loss)
-            print(f"Iteration {it + 1}, accuracy = {accuracy_score(y, self.predict(X))}")
+            print(f"Iteration {it + 1}, accuracy = {accuracy_score(y.ravel(), self.predict(X))}")
 
             self.update_no_improvement_count(X_val, y_val)
             self.optimizer.iteration_ends(time_step)
@@ -239,15 +239,30 @@ class MLP:
         return self.label_binarizer.inverse_transform(y_pred)
 
 
+def cross_val_score(estimator, X, y, cv=5):
+    scores = np.zeros(cv)
+    folds = StratifiedKFold(n_splits=cv, random_state=estimator.random_state)
+    for (train_indices, test_indices), idx in zip(folds.split(X, y), range(cv)):
+        clone_estimator = copy.deepcopy(estimator)
+        X_train_folds = X[train_indices]
+        y_train_folds = y[train_indices]
+        X_test_fold = X[test_indices]
+        y_test_fold = y[test_indices]
+        clone_estimator.fit(X_train_folds, y_train_folds)
+        y_pred = clone_estimator.predict(X_test_fold)
+        scores[idx] = accuracy_score(y_test_fold, y_pred)
+    return scores
+
+
 def main():
     data = np.loadtxt("./diabetes.txt")
     X = data[:, 1: 9]
     y = data[:, 9].ravel()
-    X_train, X_test, y_train, y_test = train_test_split(X, y)
     mlp = MLP(hidden_layer_sizes=(10, 10), solver='ga', crossover_rate=0.8, mutation_rate=0.05, max_iter=1000,
               batch_size=64, learning_rate_init=0.001, pop_size=50, n_iter_no_change=1000)
-    mlp.fit(X_train, y_train)
-    print(accuracy_score(y_test, mlp.predict(X_test)))
+    scores = cross_val_score(mlp, X, y, 20)
+    print(scores)
+    print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 
 
 if __name__ == '__main__':

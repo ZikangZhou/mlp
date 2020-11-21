@@ -1,8 +1,7 @@
 import copy
 import numpy as np
 
-from sklearn.metrics import accuracy_score
-from utils import Individual
+from utils import Individual, accuracy_score
 
 
 class BaseOptimizer:
