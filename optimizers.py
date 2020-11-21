@@ -94,19 +94,19 @@ class GAOptimizer(BaseOptimizer):
         self.model = copy.deepcopy(model)
         self.X = X
         self.y = y
-        self.chromosome_len = len(params)
+        self.num_chromosomes = len(params)
         self.pop_size = pop_size
         self.crossover_rate = crossover_rate
         self.mutation_rate = mutation_rate
         self.pop = []
         self.mating_pop = []
         for _ in range(self.pop_size):
-            chromosome = []
+            chromosomes = []
             for param in params:
-                chromosome.append(np.random.uniform(-1.0, 1.0, param.shape))
-            fitness = self.get_fitness(chromosome)
-            self.pop.append(Individual(chromosome, fitness))
-            self.mating_pop.append(Individual(chromosome, fitness))
+                chromosomes.append(np.random.uniform(-1.0, 1.0, param.shape))
+            fitness = self.get_fitness(chromosomes)
+            self.pop.append(Individual(chromosomes, fitness))
+            self.mating_pop.append(Individual(chromosomes, fitness))
         self.update_params()
 
     def update_params(self, grads=None):
@@ -120,13 +120,13 @@ class GAOptimizer(BaseOptimizer):
         self.crossover()
         self.mutate()
         for i in range(self.pop_size):
-            self.pop[i].set_fitness(self.get_fitness(self.pop[i].chromosome()))
+            self.pop[i].set_fitness(self.get_fitness(self.pop[i].chromosomes()))
         self.pop[self.pop.index(min(self.pop, key=lambda x: x.fitness()))] = Individual(self.params,
                                                                                         self.get_fitness(self.params))
-        return max(self.pop, key=lambda x: x.fitness()).chromosome()
+        return max(self.pop, key=lambda x: x.fitness()).chromosomes()
 
-    def get_fitness(self, chromosome):
-        self.model.set_params(chromosome[: int(self.chromosome_len / 2)], chromosome[int(self.chromosome_len / 2):])
+    def get_fitness(self, chromosomes):
+        self.model.set_params(chromosomes[: int(self.num_chromosomes / 2)], chromosomes[int(self.num_chromosomes / 2):])
         fitness = accuracy_score(self.y, self.model.predict(self.X))
         return fitness
 
@@ -139,17 +139,17 @@ class GAOptimizer(BaseOptimizer):
             probs.append(individual.fitness() / total_fitness)
         indices = np.random.choice(self.pop_size, self.pop_size - 1, p=probs)
         for i in range(self.pop_size - 1):
-            self.mating_pop[i] = Individual(self.pop[indices[i]].chromosome(), self.pop[indices[i]].fitness())
+            self.mating_pop[i] = Individual(self.pop[indices[i]].chromosomes(), self.pop[indices[i]].fitness())
         max_individual = max(self.pop, key=lambda x: x.fitness())
-        self.mating_pop[-1] = Individual(max_individual.chromosome(), max_individual.fitness())
+        self.mating_pop[-1] = Individual(max_individual.chromosomes(), max_individual.fitness())
 
     def crossover(self):
         np.random.shuffle(self.mating_pop)
         for i in range(0, self.pop_size, 2):
             if np.random.rand() < self.crossover_rate:
-                for j in range(self.chromosome_len):
-                    chromosome1 = self.mating_pop[i].chromosome()[j]
-                    chromosome2 = self.mating_pop[i + 1].chromosome()[j]
+                for j in range(self.num_chromosomes):
+                    chromosome1 = self.mating_pop[i].chromosomes()[j]
+                    chromosome2 = self.mating_pop[i + 1].chromosomes()[j]
                     chromosome1_flat = chromosome1.flatten()
                     chromosome2_flat = chromosome2.flatten()
                     indices = np.random.choice(len(chromosome1_flat), size=2)
@@ -157,13 +157,13 @@ class GAOptimizer(BaseOptimizer):
                     tmp = np.copy(chromosome1_flat[begin: end])
                     chromosome1_flat[begin: end] = chromosome2_flat[begin: end]
                     chromosome2_flat[begin: end] = tmp
-                    self.mating_pop[i].chromosome()[j] = chromosome1_flat.reshape(chromosome1.shape)
-                    self.mating_pop[i + 1].chromosome()[j] = chromosome2_flat.reshape(chromosome2.shape)
+                    self.mating_pop[i].chromosomes()[j] = chromosome1_flat.reshape(chromosome1.shape)
+                    self.mating_pop[i + 1].chromosomes()[j] = chromosome2_flat.reshape(chromosome2.shape)
         self.pop = copy.deepcopy(self.mating_pop)
 
     def mutate(self):
         for i in range(self.pop_size):
-            for j in range(self.chromosome_len):
-                for val in np.nditer(self.pop[i].chromosome()[j], op_flags=['readwrite']):
+            for j in range(self.num_chromosomes):
+                for val in np.nditer(self.pop[i].chromosomes()[j], op_flags=['readwrite']):
                     if np.random.rand() < self.mutation_rate:
                         val[...] += np.random.normal(0.0, 0.1)

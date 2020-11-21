@@ -127,7 +127,7 @@ class MLP:
         for it in range(self.max_iter):
             if self.solver == 'ga':
                 self.optimizer.update_params()
-                loss = 1.0 / accuracy_score(y.ravel(), self.predict(X))
+                loss = 1.0 / accuracy_score(y.flatten(), self.predict(X))
             else:
                 accumulated_loss = 0.0
                 if self.shuffle:
@@ -149,7 +149,7 @@ class MLP:
 
             time_step += n_samples
             self.loss_curve.append(loss)
-            print(f"Iteration {it + 1}, accuracy = {accuracy_score(y.ravel(), self.predict(X))}")
+            print(f"Iteration {it + 1}, accuracy = {accuracy_score(y.flatten(), self.predict(X))}")
 
             self.update_no_improvement_count(X_val, y_val)
             self.optimizer.iteration_ends(time_step)
@@ -260,7 +260,7 @@ def main():
     y = data[:, 9].ravel()
     mlp = MLP(hidden_layer_sizes=(10, 10), solver='ga', crossover_rate=0.8, mutation_rate=0.05, max_iter=1000,
               batch_size=64, learning_rate_init=0.001, pop_size=50, n_iter_no_change=1000)
-    scores = cross_val_score(mlp, X, y, 20)
+    scores = cross_val_score(mlp, X, y, 5)
     print(scores)
     print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
 

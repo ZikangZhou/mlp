@@ -86,18 +86,18 @@ def accuracy_score(y_true, y_pred):
 
 class Individual:
 
-    def __init__(self, chromosome, fitness):
-        self._chromosome = copy.deepcopy(chromosome)
+    def __init__(self, chromosomes, fitness):
+        self._chromosomes = copy.deepcopy(chromosomes)
         self._fitness = fitness
 
-    def chromosome(self):
-        return self._chromosome
+    def chromosomes(self):
+        return self._chromosomes
 
     def fitness(self):
         return self._fitness
 
-    def set_chromosome(self, chromosome):
-        self._chromosome = copy.deepcopy(chromosome)
+    def set_chromosomes(self, chromosomes):
+        self._chromosomes = copy.deepcopy(chromosomes)
 
     def set_fitness(self, fitness):
         self._fitness = fitness
