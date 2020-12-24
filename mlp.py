@@ -1,10 +1,8 @@
 import copy
 import numpy as np
 
-from sklearn.linear_model import LogisticRegression, Perceptron
 from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.preprocessing import LabelBinarizer
-from sklearn.svm import LinearSVC
 from optimizers import SGDOptimizer, AdamOptimizer, GAOptimizer
 from utils import ACTIVATIONS, DERIVATIVES, LOSS_FUNCTIONS, accuracy_score
 
@@ -261,21 +259,9 @@ def main():
     data = np.loadtxt("./diabetes.txt")
     X = data[:, 1: 9]
     y = data[:, 9].ravel()
-    # mlp = MLP(hidden_layer_sizes=(1000,), solver='ga', crossover_rate=0.8, mutation_rate=0.05, max_iter=1000,
-    #           batch_size=64, pop_size=50, n_iter_no_change=1000)
-    # scores = cross_val_score(mlp, X, y, 5)
-    # print("Accuracy: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std() * 2))
-
-    lr = LogisticRegression()
-    scores = cross_val_score(lr, X, y, 5)
-    print("Accuracy: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std() * 2))
-
-    linear_svc = LinearSVC()
-    scores = cross_val_score(linear_svc, X, y, 5)
-    print("Accuracy: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std() * 2))
-
-    perceptron = Perceptron()
-    scores = cross_val_score(perceptron, X, y, 5)
+    mlp = MLP(hidden_layer_sizes=(10, 10), solver='ga', crossover_rate=0.8, mutation_rate=0.05, max_iter=1000,
+              batch_size=64, pop_size=50, n_iter_no_change=1000)
+    scores = cross_val_score(mlp, X, y, 5)
     print("Accuracy: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std() * 2))
 
 
