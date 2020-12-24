@@ -260,9 +260,9 @@ def main():
     X = data[:, 1: 9]
     y = data[:, 9].ravel()
     mlp = MLP(hidden_layer_sizes=(10, 10), solver='ga', crossover_rate=0.8, mutation_rate=0.05, max_iter=1000,
-              batch_size=64, pop_size=50, n_iter_no_change=1000)
+              pop_size=50, n_iter_no_change=1000)
     scores = cross_val_score(mlp, X, y, 5)
-    print("Accuracy: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std() * 2))
+    print("Accuracy: %0.4f (+/- %0.4f)" % (scores.mean(), scores.std()))
 
 
 if __name__ == '__main__':
