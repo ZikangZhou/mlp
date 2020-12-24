@@ -19,4 +19,4 @@ You can try this MLP classifier using the following command:
 ```console
 python3 mlp.py
 ```
-It will load the provided daibetes dataset, and do 5-fold cross validation. This classifer's interfaces are quite similar to that of sklearn's, so you can use it just like using sklearn. 
+It will load the provided daibetes dataset, and do 5-fold cross validation. This classifer's interface is quite similar to that of sklearn's, so you can use it just like using sklearn. 
