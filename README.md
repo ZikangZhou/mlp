@@ -1,6 +1,6 @@
 # Multilayer-Perceptron Classfier from Scratch
 
-This is an implementation of Multilayer-Perceptron Classfier, which is an simplified version of sklearn's MLPClassfier. It also includes an GAOptimizer for the optimization of the neural network. Therefore, you can use Genetic Algorithm to optimize the neural network's parameters by setting the solver to 'ga'.
+This is an implementation of Multilayer-Perceptron Classfier, which is a simplified version of sklearn's MLPClassfier. It also includes a GAOptimizer for the optimization of neural networks. Therefore, you can use Genetic Algorithm to optimize the neural network's parameters by setting the solver to 'ga'.
 
 ## Requirements
 
